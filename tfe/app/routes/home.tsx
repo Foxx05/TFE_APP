@@ -130,12 +130,24 @@ const humidity =
 
       <h1 className="section--title__big">Additional data</h1>
 
-      <div className="card--gap">
-        <Card>
-          <h1>Your production per month</h1>
-          <button>See in details</button>
-        </Card>
-      </div>
+    <div className="card--gap">
+      <Card>
+        <h1>Your production per month</h1>
+        {/* <ProductionChart/> */}
+        <button>See in details</button>
+      </Card>
+
+      <Card>
+        <h1>Greenhouse data</h1>
+        <div className="data--props">
+          <p className="p--small__props">Length :</p>
+          <p className="p--small__props">Width :</p>
+          <p className="p--small__props">Height :</p>
+          <p className="p--small__props">Orientation :</p>
+        </div>
+        <button>Change something ?</button>
+      </Card>
+    </div>
     </>
   );
 }

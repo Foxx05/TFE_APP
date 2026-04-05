@@ -2,21 +2,26 @@ import { useEffect, useState } from "react";
 import Card from "../components/card";
 import Gauge from "../components/gauge";
 import GaugePercentage from "../components/gaugePercentage";
-// import ProductionChart from "../components/productionChart";
+import ProductionChart from "../components/productionChart";
 
 type Snapshot = {
   captured_at: string;
-  temperature_air_c: number | null;
-  humidity_pct: number | null;
-  pressure_hpa: number | null;
-  lux: number | null;
-  flowers_white: number;
-  fruits_green: number;
-  fruits_yellow: number;
-  fruits_red: number;
-  harvested_now: number;
-  harvest_total: number;
+  temperature_air_c: number | string | null;
+  humidity_pct: number | string | null;
+  pressure_hpa: number | string | null;
+  lux: number | string | null;
+  flowers_white: number | string;
+  fruits_green: number | string;
+  fruits_yellow: number | string;
+  fruits_red: number | string;
+  harvested_now: number | string;
+  harvest_total: number | string;
   status: string;
+};
+
+type ProductionPoint = {
+  label: string;
+  value: number;
 };
 
 type ApiResponse = {
@@ -24,23 +29,25 @@ type ApiResponse = {
   greenhouse_id: number;
   last: Snapshot | null;
   history: Snapshot[];
+  monthly_production?: ProductionPoint[];
   message?: string;
 };
 
 export default function Index() {
   const [data, setData] = useState<Snapshot | null>(null);
+  const [monthlyProduction, setMonthlyProduction] = useState<ProductionPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function loadSensors() {
+    async function loadDashboard() {
       try {
         setLoading(true);
         setError(null);
 
-      const response = await fetch(
-        "https://theocolpaert.be/projets/tfe_test2/backend/import.php?greenhouse_id=1&limit=100"
-      );
+        const response = await fetch(
+          "https://theocolpaert.be/projets/tfe_test3/backend/import.php?greenhouse_id=1&limit=100"
+        );
 
         if (!response.ok) {
           throw new Error(`Erreur HTTP ${response.status}`);
@@ -53,31 +60,35 @@ export default function Index() {
         }
 
         setData(json.last);
+        setMonthlyProduction(json.monthly_production || []);
       } catch (err) {
         console.error(err);
-        setError("Impossible de charger les données capteurs.");
+        setError("Impossible de charger les données du dashboard.");
       } finally {
         setLoading(false);
       }
     }
 
-    loadSensors();
+    loadDashboard();
   }, []);
 
-const temperature =
-  data?.temperature_air_c != null
-    ? `${Number(data.temperature_air_c).toFixed(1)}°C`
-    : "--";
+  const temperature =
+    data?.temperature_air_c != null
+      ? `${Number(data.temperature_air_c).toFixed(1)}°C`
+      : "--";
 
-const sunlight =
-  data?.lux != null
-    ? `${Number(data.lux).toFixed(1)} Lx`
-    : "--";
+  const sunlight =
+    data?.lux != null
+      ? `${Number(data.lux).toFixed(1)} Lx`
+      : "--";
 
-const humidity =
-  data?.humidity_pct != null
-    ? `${Number(data.humidity_pct).toFixed(0)} %`
-    : "--";
+  const humidity =
+    data?.humidity_pct != null
+      ? `${Number(data.humidity_pct).toFixed(0)} %`
+      : "--";
+
+  const strawberriesReady =
+    data != null ? Number(data.fruits_red || 0) : 0;
 
   return (
     <>
@@ -92,7 +103,7 @@ const humidity =
 
       <h1 className="section--title__big">Data from Greenhouse No. 1</h1>
 
-      {loading && <p>Chargement des données capteurs...</p>}
+      {loading && <p>Chargement des données...</p>}
       {error && <p>{error}</p>}
 
       <div className="grid">
@@ -116,7 +127,7 @@ const humidity =
 
         <Card>
           <p className="p--small">Culture ready at</p>
-          <p className="p--big">85 %</p>
+          {/* <p className="p--big">{readyPercent} %</p> */}
           <GaugePercentage />
         </Card>
       </div>
@@ -124,31 +135,31 @@ const humidity =
       <Card>
         <div>
           <p className="p--small">Currently</p>
-          <p className="p--big">206 strawberries</p>
+          <p className="p--big">{strawberriesReady} strawberries</p>
           <p className="p--small">are ready to get picked up</p>
         </div>
       </Card>
 
       <h1 className="section--title__big">Additional data</h1>
 
-    <div className="card--gap">
-      <Card>
-        <h1>Your production per month</h1>
-        {/* <ProductionChart/> */}
-        <button>See in details</button>
-      </Card>
+      <div className="card--gap">
+        <Card>
+          <h1>Your production per month</h1>
+          <ProductionChart data={monthlyProduction} />
+          <button>See in details</button>
+        </Card>
 
-      <Card>
-        <h1>Greenhouse data</h1>
-        <div className="data--props">
-          <p className="p--small__props">Length :</p>
-          <p className="p--small__props">Width :</p>
-          <p className="p--small__props">Height :</p>
-          <p className="p--small__props">Orientation :</p>
-        </div>
-        <button>Change something ?</button>
-      </Card>
-    </div>
+        <Card>
+          <h1>Greenhouse data</h1>
+          <div className="data--props">
+            <p className="p--small__props">Length :</p>
+            <p className="p--small__props">Width :</p>
+            <p className="p--small__props">Height :</p>
+            <p className="p--small__props">Orientation :</p>
+          </div>
+          <button>Change something ?</button>
+        </Card>
+      </div>
     </>
   );
 }

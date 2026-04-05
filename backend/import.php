@@ -81,14 +81,52 @@ try {
     ]);
     $rows = $stmtHistory->fetchAll();
 
-    // ordre chronologique pour graphes futurs
     $rows = array_reverse($rows);
+
+    // Production mensuelle
+    $stmtMonthly = $pdo->prepare("
+        SELECT
+            DATE_FORMAT(day_date, '%Y-%m') AS month_key,
+            MAX(day_total) AS month_end_total
+        FROM (
+            SELECT
+                DATE(captured_at) AS day_date,
+                MAX(harvest_total) AS day_total
+            FROM production_snapshots
+            WHERE greenhouse_id = :greenhouse_id
+            GROUP BY DATE(captured_at)
+        ) daily
+        GROUP BY DATE_FORMAT(day_date, '%Y-%m')
+        ORDER BY month_key ASC
+    ");
+    $stmtMonthly->execute([
+        ':greenhouse_id' => $greenhouseId
+    ]);
+    $monthlyRaw = $stmtMonthly->fetchAll();
+
+    $monthlyProduction = [];
+    $prevMonthEnd = 0;
+
+    foreach ($monthlyRaw as $row) {
+        $monthKey = $row['month_key'];
+        $monthEnd = (int)$row['month_end_total'];
+
+        $produced = $monthEnd - $prevMonthEnd;
+
+        $monthlyProduction[] = [
+            'label' => $monthKey,
+            'value' => max(0, $produced)
+        ];
+
+        $prevMonthEnd = $monthEnd;
+    }
 
     echo json_encode([
         'success' => true,
         'greenhouse_id' => $greenhouseId,
         'last' => $lastRow,
-        'history' => $rows
+        'history' => $rows,
+        'monthly_production' => $monthlyProduction
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
 } catch (PDOException $e) {

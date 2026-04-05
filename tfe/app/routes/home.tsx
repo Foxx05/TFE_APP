@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Card from "../components/card";
 import Gauge from "../components/gauge";
-import GaugePercentage from "../components/gaugePercentage";
+import WeatherIcon from "../components/weatherIcon";
 import ProductionChart from "../components/productionChart";
 
 type Snapshot = {
@@ -86,6 +86,25 @@ export default function Index() {
     data?.humidity_pct != null
       ? `${Number(data.humidity_pct).toFixed(0)} %`
       : "--";
+  
+  const pressureValue =
+    data?.pressure_hpa != null ? Number(data.pressure_hpa) : null;
+
+    const weatherType =
+      pressureValue == null
+        ? "cloud"
+        : pressureValue < 1011
+          ? "rain"
+          : pressureValue > 1015
+            ? "sun"
+            : "cloud";
+
+    const weatherLabel =
+      weatherType === "rain"
+        ? "Rainy"
+        : weatherType === "sun"
+          ? "Sunny"
+          : "Cloudy";
 
   const strawberriesReady =
     data != null ? Number(data.fruits_red || 0) : 0;
@@ -126,9 +145,10 @@ export default function Index() {
         </Card>
 
         <Card>
-          <p className="p--small">Culture ready at</p>
-          {/* <p className="p--big">{readyPercent} %</p> */}
-          <GaugePercentage />
+            <p className="p--small">Weather</p>
+            <div style={{display: "flex", justifyContent: "center", marginTop: "8px"}}>
+              <WeatherIcon type={weatherType} size={60} />
+            </div>
         </Card>
       </div>
 

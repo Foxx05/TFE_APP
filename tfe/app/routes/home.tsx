@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Card from "../components/card";
 import Gauge from "../components/gauge";
 import GaugePercentage from "../components/gaugePercentage";
+// import ProductionChart from "../components/productionChart";
 
 type Snapshot = {
   captured_at: string;

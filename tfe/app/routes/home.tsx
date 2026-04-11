@@ -41,6 +41,7 @@ export default function Index() {
   const [showT, setShowT] = useState(false);
   const [showSunRate, setShowSunRate] = useState(false);
   const [historyData, setHistoryData] = useState<Snapshot[]>([]);
+  const [showHumidity, setShowHumidity] = useState(false);
 
   useEffect(() => {
     async function loadDashboard() {
@@ -160,6 +161,27 @@ export default function Index() {
     return sum / values.length;
   })();
 
+  const humidityAverage = (() => {
+    if (!data || !historyData.length) return null;
+
+    const lastDate = parseMysqlDate(data.captured_at);
+    const minTime = lastDate.getTime() - 24 * 60 * 60 * 1000;
+
+    const values = historyData
+      .filter((row) => {
+        if (!row.captured_at || row.humidity_pct == null) return false;
+        const rowDate = parseMysqlDate(row.captured_at);
+        return rowDate.getTime() >= minTime && rowDate.getTime() <= lastDate.getTime();
+      })
+      .map((row) => Number(row.humidity_pct))
+      .filter((value) => !Number.isNaN(value));
+
+    if (!values.length) return null;
+
+    const sum = values.reduce((acc, value) => acc + value, 0);
+    return sum / values.length;
+  })();
+
   return (
     <>
       <div className="section--logo">
@@ -213,9 +235,21 @@ export default function Index() {
           </div>
         </Card>
         <Card>
-          <p className="p--small">Humidity rate</p>
-          <p className="p--big">{humidity}</p>
-          <Gauge />
+          <div
+            onClick={() => setShowHumidity((prev) => !prev)}
+            style={{ cursor: "pointer" }}
+          >
+            <p className="p--small">Humidity rate</p>
+            <p className="p--big">{humidity}</p>
+            <Gauge />
+
+            {showHumidity && (
+              <p className="p--small" style={{ marginTop: "12px" }}>
+                Avg last 24h:{" "}
+                {humidityAverage != null ? `${humidityAverage.toFixed(1)} %` : "--"}
+              </p>
+            )}
+          </div>
         </Card>
 
         <Card>

@@ -39,6 +39,7 @@ export default function Index() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showT, setShowT] = useState(false);
+  const [showSunRate, setShowSunRate] = useState(false);
   const [historyData, setHistoryData] = useState<Snapshot[]>([]);
 
   useEffect(() => {
@@ -114,11 +115,10 @@ export default function Index() {
     data != null ? Number(data.fruits_red || 0) : 0;
 
   function parseMysqlDate(dateStr: string): Date {
-  // "2026-09-29 20:00:00" -> Date locale
-  return new Date(dateStr.replace(" ", "T"));
+    return new Date(dateStr.replace(" ", "T"));
   }
 
-  const temp24hAverage = (() => {
+  const tempAverage = (() => {
   if (!data || !historyData.length) return null;
 
   const lastDate = parseMysqlDate(data.captured_at);
@@ -133,10 +133,31 @@ export default function Index() {
     .map((row) => Number(row.temperature_air_c))
     .filter((value) => !Number.isNaN(value));
 
-  if (!values.length) return null;
+    if (!values.length) return null;
 
-  const sum = values.reduce((acc, value) => acc + value, 0);
-  return sum / values.length;
+    const sum = values.reduce((acc, value) => acc + value, 0);
+    return sum / values.length;
+  })();
+
+  const sunRateAverage = (() => {
+    if (!data || !historyData.length) return null;
+
+    const lastDate = parseMysqlDate(data.captured_at);
+    const minTime = lastDate.getTime() - 24 * 60 * 60 * 1000;
+
+    const values = historyData
+      .filter((row) => {
+        if (!row.captured_at || row.lux == null) return false;
+        const rowDate = parseMysqlDate(row.captured_at);
+        return rowDate.getTime() >= minTime && rowDate.getTime() <= lastDate.getTime();
+      })
+      .map((row) => Number(row.lux))
+      .filter((value) => !Number.isNaN(value));
+
+    if (!values.length) return null;
+
+    const sum = values.reduce((acc, value) => acc + value, 0);
+    return sum / values.length;
   })();
 
   return (
@@ -168,18 +189,29 @@ export default function Index() {
             {showT && (
               <p className="p--small" style={{ marginTop: "12px" }}>
                 Avg last 24h:{" "}
-                {temp24hAverage != null ? `${temp24hAverage.toFixed(1)}°C` : "--"}
+                {tempAverage != null ? `${tempAverage.toFixed(1)}°C` : "--"}
               </p>
             )}
           </div>
         </Card>
 
         <Card>
-          <p className="p--small">Sunlight rate</p>
-          <p className="p--big">{sunlight}</p>
-          <Gauge />
-        </Card>
+          <div
+            onClick={() => setShowSunRate((prev) => !prev)}
+            style={{ cursor: "pointer" }}
+          >
+            <p className="p--small">Sunlight rate</p>
+            <p className="p--big">{sunlight}</p>
+            <Gauge />
 
+            {showSunRate && (
+              <p className="p--small" style={{ marginTop: "12px" }}>
+                Avg last 24h:{" "}
+                {sunRateAverage != null ? `${sunRateAverage.toFixed(1)} Lx` : "--"}
+              </p>
+            )}
+          </div>
+        </Card>
         <Card>
           <p className="p--small">Humidity rate</p>
           <p className="p--big">{humidity}</p>

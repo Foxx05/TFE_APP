@@ -3,6 +3,6 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import { reactRouter } from "@react-router/dev/vite";
 
 export default defineConfig({
-  base: "/projets/tfe_test3/",
+  base: "/projets/tfe_test4/",
   plugins: [reactRouter(), tsconfigPaths()],
 });

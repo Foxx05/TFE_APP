@@ -103,13 +103,6 @@ export default function Index() {
             ? "sun"
             : "cloud";
 
-    const weatherLabel =
-      weatherType === "rain"
-        ? "Rainy"
-        : weatherType === "sun"
-          ? "Sunny"
-          : "Cloudy";
-
   const strawberriesReady =
     data != null ? Number(data.fruits_red || 0) : 0;
 

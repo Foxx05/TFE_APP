@@ -38,6 +38,8 @@ export default function Index() {
   const [monthlyProduction, setMonthlyProduction] = useState<ProductionPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showT, setShowT] = useState(false);
+  const [historyData, setHistoryData] = useState<Snapshot[]>([]);
 
   useEffect(() => {
     async function loadDashboard() {
@@ -61,6 +63,8 @@ export default function Index() {
 
         setData(json.last);
         setMonthlyProduction(json.monthly_production || []);
+        setHistoryData(json.history || []);
+
       } catch (err) {
         console.error(err);
         setError("Impossible de charger les données du dashboard.");
@@ -109,6 +113,32 @@ export default function Index() {
   const strawberriesReady =
     data != null ? Number(data.fruits_red || 0) : 0;
 
+  function parseMysqlDate(dateStr: string): Date {
+  // "2026-09-29 20:00:00" -> Date locale
+  return new Date(dateStr.replace(" ", "T"));
+  }
+
+  const temp24hAverage = (() => {
+  if (!data || !historyData.length) return null;
+
+  const lastDate = parseMysqlDate(data.captured_at);
+  const minTime = lastDate.getTime() - 24 * 60 * 60 * 1000;
+
+  const values = historyData
+    .filter((row) => {
+      if (!row.captured_at || row.temperature_air_c == null) return false;
+      const rowDate = parseMysqlDate(row.captured_at);
+      return rowDate.getTime() >= minTime && rowDate.getTime() <= lastDate.getTime();
+    })
+    .map((row) => Number(row.temperature_air_c))
+    .filter((value) => !Number.isNaN(value));
+
+  if (!values.length) return null;
+
+  const sum = values.reduce((acc, value) => acc + value, 0);
+  return sum / values.length;
+  })();
+
   return (
     <>
       <div className="section--logo">
@@ -127,9 +157,21 @@ export default function Index() {
 
       <div className="grid">
         <Card>
-          <p className="p--small">Temperature</p>
-          <p className="p--big">{temperature}</p>
-          <Gauge />
+          <div
+            onClick={() => setShowT((prev) => !prev)}
+            style={{ cursor: "pointer" }}
+          >
+            <p className="p--small">Temperature</p>
+            <p className="p--big">{temperature}</p>
+            <Gauge />
+
+            {showT && (
+              <p className="p--small" style={{ marginTop: "12px" }}>
+                Avg last 24h:{" "}
+                {temp24hAverage != null ? `${temp24hAverage.toFixed(1)}°C` : "--"}
+              </p>
+            )}
+          </div>
         </Card>
 
         <Card>

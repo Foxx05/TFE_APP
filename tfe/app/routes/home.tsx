@@ -42,6 +42,7 @@ export default function Index() {
   const [showSunRate, setShowSunRate] = useState(false);
   const [historyData, setHistoryData] = useState<Snapshot[]>([]);
   const [showHumidity, setShowHumidity] = useState(false);
+  const [showPressure, setShowPressure] = useState(false);
 
   useEffect(() => {
     async function loadDashboard() {
@@ -182,6 +183,27 @@ export default function Index() {
     return sum / values.length;
   })();
 
+  const pressureAverage = (() => {
+    if (!data || !historyData.length) return null;
+
+    const lastDate = parseMysqlDate(data.captured_at);
+    const minTime = lastDate.getTime() - 24 * 60 * 60 * 1000;
+
+    const values = historyData
+      .filter((row) => {
+        if (!row.captured_at || row.pressure_hpa == null) return false;
+        const rowDate = parseMysqlDate(row.captured_at);
+        return rowDate.getTime() >= minTime && rowDate.getTime() <= lastDate.getTime();
+      })
+      .map((row) => Number(row.pressure_hpa))
+      .filter((value) => !Number.isNaN(value));
+
+    if (!values.length) return null;
+
+    const sum = values.reduce((acc, value) => acc + value, 0);
+    return sum / values.length;
+  })();
+
   return (
     <>
       <div className="section--logo">
@@ -200,10 +222,7 @@ export default function Index() {
 
       <div className="grid">
         <Card>
-          <div
-            onClick={() => setShowT((prev) => !prev)}
-            style={{ cursor: "pointer" }}
-          >
+          <div onClick={() => setShowT((prev) => !prev)} style={{ cursor: "pointer" }}>
             <p className="p--small">Temperature</p>
             <p className="p--big">{temperature}</p>
             <Gauge />
@@ -218,10 +237,7 @@ export default function Index() {
         </Card>
 
         <Card>
-          <div
-            onClick={() => setShowSunRate((prev) => !prev)}
-            style={{ cursor: "pointer" }}
-          >
+          <div onClick={() => setShowSunRate((prev) => !prev)} style={{ cursor: "pointer" }}>
             <p className="p--small">Sunlight rate</p>
             <p className="p--big">{sunlight}</p>
             <Gauge />
@@ -234,11 +250,9 @@ export default function Index() {
             )}
           </div>
         </Card>
+
         <Card>
-          <div
-            onClick={() => setShowHumidity((prev) => !prev)}
-            style={{ cursor: "pointer" }}
-          >
+          <div onClick={() => setShowHumidity((prev) => !prev)} style={{ cursor: "pointer" }}>
             <p className="p--small">Humidity rate</p>
             <p className="p--big">{humidity}</p>
             <Gauge />
@@ -253,10 +267,19 @@ export default function Index() {
         </Card>
 
         <Card>
+          <div onClick={() => setShowPressure((prev) => !prev)} style={{ cursor: "pointer" }}>
             <p className="p--small">Weather</p>
-            <div style={{display: "flex", justifyContent: "center", marginTop: "8px"}}>
+            <div style={{ display: "flex", justifyContent: "center", marginTop: "8px" }}>
               <WeatherIcon type={weatherType} size={60} />
             </div>
+
+            {showPressure && (
+              <p className="p--small" style={{ marginTop: "12px" }}>
+                Avg last 24h:{" "}
+                {pressureAverage != null ? `${pressureAverage.toFixed(1)} hPa` : "--"}
+              </p>
+            )}
+          </div>
         </Card>
       </div>
 

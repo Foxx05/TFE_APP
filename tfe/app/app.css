@@ -96,6 +96,11 @@ h1{
   text-align: center;
 }
 
+.card--click:active {
+  transform: scale(0.97);
+  opacity: 0.9;
+}
+
 .p--big{
   font-size: 31px;
   margin: 20px 0;

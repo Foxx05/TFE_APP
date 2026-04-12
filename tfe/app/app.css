@@ -96,7 +96,7 @@ h1{
   text-align: center;
 }
 
-.card--click:active {
+.card--click:active, button{
   transform: scale(0.97);
   opacity: 0.9;
 }

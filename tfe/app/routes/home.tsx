@@ -211,8 +211,8 @@ export default function Index() {
       {error && <p>{error}</p>}
 
       <div className="grid">
-        <Card>
-          <div className="card--click" onClick={() => setShowDetails((prev) => !prev)} style={{ cursor: "pointer" }}>
+        <div className="card--click" onClick={() => setShowDetails((prev) => !prev)} style={{ cursor: "pointer" }}>
+          <Card>
             <p className="p--small">Temperature</p>
             <p className="p--big">{temperature}</p>
             <Gauge />
@@ -223,11 +223,11 @@ export default function Index() {
                 {tempAverage != null ? `${tempAverage.toFixed(1)}°C` : "--"}
               </p>
             )}
-          </div>
-        </Card>
+          </Card>
+        </div>
 
-        <Card>
-          <div className="card--click" onClick={() => setShowDetails((prev) => !prev)} style={{ cursor: "pointer" }}>
+        <div className="card--click" onClick={() => setShowDetails((prev) => !prev)} style={{ cursor: "pointer" }}>
+          <Card>
             <p className="p--small">Sunlight rate</p>
             <p className="p--big">{sunlight}</p>
             <Gauge />
@@ -238,11 +238,11 @@ export default function Index() {
                 {sunRateAverage != null ? `${sunRateAverage.toFixed(1)} Lx` : "--"}
               </p>
             )}
-          </div>
-        </Card>
+          </Card>
+        </div>
 
-        <Card>
-          <div className="card--click" onClick={() => setShowDetails((prev) => !prev)} style={{ cursor: "pointer" }}>
+        <div className="card--click" onClick={() => setShowDetails((prev) => !prev)} style={{ cursor: "pointer" }}>
+          <Card>
             <p className="p--small">Humidity rate</p>
             <p className="p--big">{humidity}</p>
             <Gauge />
@@ -253,11 +253,11 @@ export default function Index() {
                 {humidityAverage != null ? `${humidityAverage.toFixed(1)} %` : "--"}
               </p>
             )}
-          </div>
-        </Card>
+          </Card>
+        </div>
 
-        <Card>
-          <div className="card--click" onClick={() => setShowDetails((prev) => !prev)} style={{ cursor: "pointer" }}>
+        <div className="card--click" onClick={() => setShowDetails((prev) => !prev)} style={{ cursor: "pointer" }}>
+          <Card>
             <p className="p--small">Weather</p>
             <div style={{ display: "flex", justifyContent: "center", marginTop: "8px" }}>
               <WeatherIcon type={weatherType} size={60} />
@@ -269,8 +269,8 @@ export default function Index() {
                 {pressureAverage != null ? `${pressureAverage.toFixed(1)} hPa` : "--"}
               </p>
             )}
-          </div>
-        </Card>
+          </Card>
+        </div>
       </div>
 
       <Card>

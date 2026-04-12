@@ -42,7 +42,7 @@ export default function Index() {
   const [historyData, setHistoryData] = useState<Snapshot[]>([]);
   const [showDetails, setShowDetails] = useState(false);
   const [showChartDetails, setShowChartDetails] = useState(false);
-  
+
   useEffect(() => {
     async function loadDashboard() {
       try {
@@ -339,25 +339,25 @@ export default function Index() {
           {showChartDetails && (
             <div style={{ marginTop: "8px" }}>
               <LineChart
-                title="Temperature over 5 last days"
+                title="Temperature over last 5 days"
                 unit="°C"
                 data={monthTempData}
               />
 
               <LineChart
-                title="Humidity over 5 last days"
+                title="Humidity over last 5 days"
                 unit="%"
                 data={monthHumidityData}
               />
 
               <LineChart
-                title="Pressure over 5 last days"
+                title="Pressure over last 5 days"
                 unit="hPa"
                 data={monthPresData}
               />
 
               <LineChart
-                title="Sunlight over 5 last days"
+                title="Sunlight over last 5 days"
                 unit="Lx"
                 data={monthSunlightData}
               />

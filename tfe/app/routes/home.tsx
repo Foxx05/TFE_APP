@@ -3,6 +3,7 @@ import Card from "../components/card";
 import Gauge from "../components/gauge";
 import WeatherIcon from "../components/weatherIcon";
 import ProductionChart from "../components/productionChart";
+import LineChart from "../components/lineChart";
 
 type Snapshot = {
   captured_at: string;
@@ -40,7 +41,8 @@ export default function Index() {
   const [error, setError] = useState<string | null>(null);
   const [historyData, setHistoryData] = useState<Snapshot[]>([]);
   const [showDetails, setShowDetails] = useState(false);
-
+  const [showChartDetails, setShowChartDetails] = useState(false);
+  
   useEffect(() => {
     async function loadDashboard() {
       try {
@@ -194,6 +196,48 @@ export default function Index() {
     return sum / values.length;
   })();
 
+  function formatDayLabel(date: Date): string {
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    return `${day}/${month}`;
+  }
+
+  const monthTempData = buildDailyAverageData(historyData, "temperature_air_c");
+  const monthHumidityData = buildDailyAverageData(historyData, "humidity_pct");
+  const monthPresData = buildDailyAverageData(historyData, "pressure_hpa");
+  const monthSunlightData = buildDailyAverageData(historyData, "lux");
+
+  function buildDailyAverageData( rows: Snapshot[], field: "temperature_air_c" | "humidity_pct" | "pressure_hpa" | "lux") {
+    const grouped = new Map<string, number[]>();
+
+    for (const row of rows) {
+      if (!row.captured_at || row[field] == null) continue;
+
+      const value = Number(row[field]);
+      if (Number.isNaN(value)) continue;
+
+      const date = parseMysqlDate(row.captured_at);
+      const key = date.toISOString().slice(0, 10);
+
+      if (!grouped.has(key)) {
+        grouped.set(key, []);
+      }
+
+      grouped.get(key)!.push(value);
+    }
+
+    return Array.from(grouped.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([key, values]) => {
+        const avg = values.reduce((acc, v) => acc + v, 0) / values.length;
+        const date = new Date(`${key}T00:00:00`);
+        return {
+          label: formatDayLabel(date),
+          value: Number(avg.toFixed(2)),
+        };
+      });
+  }
+
   return (
     <>
       <div className="section--logo">
@@ -287,7 +331,38 @@ export default function Index() {
         <Card>
           <h1>Your production per month</h1>
           <ProductionChart data={monthlyProduction} />
-          <button>See in details</button>
+
+          <button onClick={() => setShowChartDetails((prev) => !prev)}>
+            {showChartDetails ? "Close details" : "See details"}
+          </button>
+
+          {showChartDetails && (
+            <div style={{ marginTop: "8px" }}>
+              <LineChart
+                title="Temperature over 5 last days"
+                unit="°C"
+                data={monthTempData}
+              />
+
+              <LineChart
+                title="Humidity over 5 last days"
+                unit="%"
+                data={monthHumidityData}
+              />
+
+              <LineChart
+                title="Pressure over 5 last days"
+                unit="hPa"
+                data={monthPresData}
+              />
+
+              <LineChart
+                title="Sunlight over 5 last days"
+                unit="Lx"
+                data={monthSunlightData}
+              />
+            </div>
+          )}
         </Card>
 
         <Card>

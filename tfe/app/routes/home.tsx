@@ -211,7 +211,7 @@ export default function Index() {
       {error && <p>{error}</p>}
 
       <div className="grid">
-        <div className="card--click" onClick={() => setShowDetails((prev) => !prev)} style={{ cursor: "pointer" }}>
+        <div className="card--click" onClick={() => setShowDetails((prev) => !prev)}>
           <Card>
             <p className="p--small">Temperature</p>
             <p className="p--big">{temperature}</p>
@@ -226,7 +226,7 @@ export default function Index() {
           </Card>
         </div>
 
-        <div className="card--click" onClick={() => setShowDetails((prev) => !prev)} style={{ cursor: "pointer" }}>
+        <div className="card--click" onClick={() => setShowDetails((prev) => !prev)}>
           <Card>
             <p className="p--small">Sunlight rate</p>
             <p className="p--big">{sunlight}</p>
@@ -241,7 +241,7 @@ export default function Index() {
           </Card>
         </div>
 
-        <div className="card--click" onClick={() => setShowDetails((prev) => !prev)} style={{ cursor: "pointer" }}>
+        <div className="card--click" onClick={() => setShowDetails((prev) => !prev)}>
           <Card>
             <p className="p--small">Humidity rate</p>
             <p className="p--big">{humidity}</p>
@@ -256,7 +256,7 @@ export default function Index() {
           </Card>
         </div>
 
-        <div className="card--click" onClick={() => setShowDetails((prev) => !prev)} style={{ cursor: "pointer" }}>
+        <div className="card--click" onClick={() => setShowDetails((prev) => !prev)}>
           <Card>
             <p className="p--small">Weather</p>
             <div style={{ display: "flex", justifyContent: "center", marginTop: "8px" }}>

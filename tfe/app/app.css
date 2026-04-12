@@ -2,6 +2,7 @@
   box-sizing: border-box;
   font-family: 'Outfit', sans-serif;
   font-weight: 400;
+  -webkit-tap-highlight-color: transparent; /* aide chatGPT pour retirer halo bleu chrome tel */ 
 }
 
 body{

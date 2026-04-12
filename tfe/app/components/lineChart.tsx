@@ -25,17 +25,17 @@ type ChartPoint = {
   value: number;
 };
 
-type MetricLineChartProps = {
+type LineChartProps = {
   title: string;
   unit: string;
   data: ChartPoint[];
 };
 
-export default function MetricLineChart({
+export default function LineChart({
   title,
   unit,
   data,
-}: MetricLineChartProps) {
+}: LineChartProps) {
   if (!data.length) {
     return <p style={{ marginTop: "12px" }}>No data available.</p>;
   }
@@ -48,6 +48,7 @@ export default function MetricLineChart({
         data: data.map((item) => item.value),
         tension: 0.3,
         fill: false,
+        borderColor: "#753443",
       },
     ],
   };

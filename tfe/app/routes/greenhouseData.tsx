@@ -49,9 +49,7 @@ export default function Index() {
         setLoading(true);
         setError(null);
 
-        const response = await fetch(
-        "https://theocolpaert.be/projets/tfe_test5/backend/import.php?greenhouse_id=1&limit=100"
-        );
+        const response = await fetch("https://theocolpaert.be/projets/tfe_test5/backend/import.php?greenhouse_id=1&limit=100");
 
         if (!response.ok) {
           throw new Error(`Erreur HTTP ${response.status}`);

@@ -6,16 +6,12 @@ export default function Home() {
   return (
     <>
       <div className="section--logo">
-        <img
-          className="img--logo"
-          src={import.meta.env.BASE_URL + "logo.svg"}
-          alt="Logo de l'entreprise BerryCam"
-        />
+        <img className="img--logo" src={import.meta.env.BASE_URL + "logo.svg"} alt="Logo de l'entreprise BerryCam"/>
         <p className="p--logo">BerryCam</p>
       </div>
 
       <h1 className="section--title__big">Your exploitation</h1>
-      <p className="p--intro">You have 3 greenhouses in your exploitation. See the details the details below.</p>
+      <p className="p--intro">You have 3 greenhouses in your exploitation. See the details below.</p>
 
       <div className="grid">
         <Link to={`${import.meta.env.BASE_URL}greenhouseData/1`} className="card--click card--home">

@@ -50,7 +50,7 @@ export default function Index() {
         setError(null);
 
         const response = await fetch(
-          "https://theocolpaert.be/projets/tfe_test4/backend/import.php?${greenhouseId}&limit=100"
+        "https://theocolpaert.be/projets/tfe_test5/backend/import.php?greenhouse_id=1&limit=100"
         );
 
         if (!response.ok) {
@@ -241,11 +241,7 @@ export default function Index() {
   return (
     <>
       <div className="section--logo">
-        <img
-          className="img--logo"
-          src={import.meta.env.BASE_URL + "logo.svg"}
-          alt="Logo de l'entreprise BerryCam"
-        />
+        <img className="img--logo" src={import.meta.env.BASE_URL + "logo.svg"} alt="Logo de l'entreprise BerryCam"/>
         <p className="p--logo">BerryCam</p>
       </div>
 

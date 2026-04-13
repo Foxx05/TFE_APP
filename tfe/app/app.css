@@ -93,6 +93,9 @@ h1{
 
 .card--click, button{
   cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  display: block;
 }
 
 .card--click:active, button:active{

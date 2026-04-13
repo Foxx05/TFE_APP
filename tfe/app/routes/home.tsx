@@ -17,12 +17,12 @@ export default function Home() {
       <h1 className="section--title__big">Your exploitation</h1>
 
       <div className="grid">
-        <div className="card--click card--home">
-          <Card>
-            <p className="p--small">See datas for</p>
-            <p className="p--big">No.1</p>
-          </Card>
-        </div>
+        <Link to={`${import.meta.env.BASE_URL}greenhouseData/1`} className="card--click card--home">
+            <Card>
+              <p className="p--small">See datas for</p>
+              <p className="p--big">No.1</p>
+            </Card>
+        </Link>
 
         <div className="card--click card--home">
           <Card>

@@ -239,14 +239,16 @@ export default function Index() {
 
     return (
         <>
-            <div className="section--logo">
-                <img className="img--logo" src={import.meta.env.BASE_URL + "logo.svg"} alt="Logo de l'entreprise BerryCam"/>
-                <p className="p--logo">BerryCam</p>
-            </div>
+            <div className="top--nav">
+                <div className="section--logo">
+                    <img className="img--logo" src={import.meta.env.BASE_URL + "logo.svg"} alt="Logo de l'entreprise BerryCam"/>
+                    <p className="p--logo">BerryCam</p>
+                </div>
 
-            <Link to={import.meta.env.BASE_URL}>
-                <button>Back</button>
-            </Link>
+                <Link to={import.meta.env.BASE_URL} className="btn--back">
+                    Back
+                </Link>
+            </div>
 
             <h1 className="section--title__big">Data from Greenhouse No. 1</h1>
 

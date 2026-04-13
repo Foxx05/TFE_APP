@@ -37,10 +37,12 @@ h1{
   background: #753443;
   color: #fafafa;
   padding: 10px;
-  border-radius: 8px;
   text-align: center;
   margin-top: 64px;
   margin-bottom: 42px;
+  position: relative;
+  left: -16px;
+  width: calc(100% + 32px);
 }
 
 .section--logo{

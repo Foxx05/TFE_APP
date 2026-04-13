@@ -45,6 +45,10 @@ h1{
   width: calc(100% + 32px);
 }
 
+.p--intro{
+  margin-bottom: 42px;
+}
+
 .section--logo{
   display: flex;
   flex-direction: row;
@@ -56,12 +60,12 @@ h1{
   font-size: 20px;
 }
 
-.section--top .section--title {
+.section--top .section--title{
   margin-bottom: 10px;
   margin-top: 108px;
 }
 
-.section--top span {
+.section--top span{
   display: block;
   text-align: center;
 }

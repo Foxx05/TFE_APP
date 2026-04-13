@@ -15,6 +15,7 @@ export default function Home() {
       </div>
 
       <h1 className="section--title__big">Your exploitation</h1>
+      <p className="p--intro">You have 3 greenhouses in your exploitation. See the details the details below.</p>
 
       <div className="grid">
         <Link to={`${import.meta.env.BASE_URL}greenhouseData/1`} className="card--click card--home">

@@ -263,7 +263,7 @@ export default function Index() {
                     <Gauge />
 
                     {showDetails && (
-                    <p className="p--small" style={{ marginTop: "12px" }}>
+                    <p className="p--small p--avg">
                         Avg last 24h:{" "}
                         {tempAverage != null ? `${tempAverage.toFixed(1)}°C` : "--"}
                     </p>
@@ -278,7 +278,7 @@ export default function Index() {
                     <Gauge />
 
                     {showDetails && (
-                    <p className="p--small" style={{ marginTop: "12px" }}>
+                    <p className="p--small p--avg">
                         Avg last 24h:{" "}
                         {sunRateAverage != null ? `${sunRateAverage.toFixed(1)} Lx` : "--"}
                     </p>
@@ -293,7 +293,7 @@ export default function Index() {
                     <Gauge />
 
                     {showDetails && (
-                    <p className="p--small" style={{ marginTop: "12px" }}>
+                    <p className="p--small p--avg">
                         Avg last 24h:{" "}
                         {humidityAverage != null ? `${humidityAverage.toFixed(1)} %` : "--"}
                     </p>
@@ -304,12 +304,12 @@ export default function Index() {
                 <div className="card--click" onClick={() => setShowDetails((prev) => !prev)}>
                 <Card>
                     <p className="p--small">Weather</p>
-                    <div style={{ display: "flex", justifyContent: "center", marginTop: "8px" }}>
+                    <div className="svg--weather" style={{ display: "flex", justifyContent: "center"}}>
                     <WeatherIcon type={weatherType} size={60} />
                     </div>
 
                     {showDetails && (
-                    <p className="p--small" style={{ marginTop: "12px" }}>
+                    <p className="p--small p--avg">
                         Avg last 24h:{" "}
                         {pressureAverage != null ? `${pressureAverage.toFixed(1)} hPa` : "--"}
                     </p>

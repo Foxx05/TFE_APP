@@ -260,7 +260,11 @@ export default function Index() {
                 <Card>
                     <p className="p--small">Temperature</p>
                     <p className="p--big">{temperature}</p>
-                    <Gauge />
+                    <Gauge
+                        value={data?.temperature_air_c != null ? Number(data.temperature_air_c) : null}
+                        min={0}
+                        max={36}
+                    />
 
                     {showDetails && (
                     <p className="p--small p--avg">
@@ -275,12 +279,12 @@ export default function Index() {
                 <Card>
                     <p className="p--small">Sunlight rate</p>
                     <p className="p--big">{sunlight}</p>
-                    <Gauge />
+                    {/* <Gauge /> */}
 
                     {showDetails && (
                     <p className="p--small p--avg">
                         Avg last 24h:{" "}
-                        {sunRateAverage != null ? `${sunRateAverage.toFixed(1)} Lx` : "--"}
+                        {sunRateAverage != null ? `${sunRateAverage.toFixed(1)}Lx` : "--"}
                     </p>
                     )}
                 </Card>
@@ -290,7 +294,11 @@ export default function Index() {
                 <Card>
                     <p className="p--small">Humidity rate</p>
                     <p className="p--big">{humidity}</p>
-                    <Gauge />
+                    <Gauge
+                        value={data?.humidity_pct != null ? Number(data.humidity_pct) : null}
+                        min={40}
+                        max={90}
+                    />
 
                     {showDetails && (
                     <p className="p--small p--avg">

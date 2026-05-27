@@ -320,9 +320,9 @@ export default function Index() {
 
             <Card>
                 <div>
-                <p className="p--small">Currently</p>
-                <p className="p--big">{strawberriesReady} strawberries</p>
-                <p className="p--small">are ready to get picked up</p>
+                    <p className="p--small">Currently</p>
+                    <p className="p--big">{strawberriesReady} strawberries</p>
+                    <p className="p--small">are ready to get picked up</p>
                 </div>
             </Card>
 
@@ -339,29 +339,29 @@ export default function Index() {
 
                 {showChartDetails && (
                     <div style={{ marginTop: "8px" }}>
-                    <LineChart
-                        title="Temperature over last 5 days"
-                        unit="°C"
-                        data={monthTempData}
-                    />
+                        <LineChart
+                            title="Temperature over last 5 days"
+                            unit="°C"
+                            data={monthTempData}
+                        />
 
-                    <LineChart
-                        title="Humidity over last 5 days"
-                        unit="%"
-                        data={monthHumidityData}
-                    />
+                        <LineChart
+                            title="Humidity over last 5 days"
+                            unit="%"
+                            data={monthHumidityData}
+                        />
 
-                    <LineChart
-                        title="Pressure over last 5 days"
-                        unit="hPa"
-                        data={monthPresData}
-                    />
+                        <LineChart
+                            title="Pressure over last 5 days"
+                            unit="hPa"
+                            data={monthPresData}
+                        />
 
-                    <LineChart
-                        title="Sunlight over last 5 days"
-                        unit="Lx"
-                        data={monthSunlightData}
-                    />
+                        <LineChart
+                            title="Sunlight over last 5 days"
+                            unit="Lx"
+                            data={monthSunlightData}
+                        />
                     </div>
                 )}
                 </Card>

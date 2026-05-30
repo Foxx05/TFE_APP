@@ -26,6 +26,13 @@ useEffect(() => {
       setGreenhouses(result.greenhouses || []);
     }
 
+    const readyResponse = await fetch("https://theocolpaert.be/projets/tfe_app/backend/get_ready_strawberries.php", {credentials: "include",});
+    const readyResult = await readyResponse.json();
+
+    if (readyResult.success) {
+      setReadyStrawberries(readyResult.ready_strawberries);
+    }
+
   }
 
   loadDemoData();

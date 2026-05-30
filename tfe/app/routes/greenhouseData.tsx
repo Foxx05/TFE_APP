@@ -5,8 +5,11 @@ import Gauge from "../components/gauge";
 import WeatherIcon from "../components/weatherIcon";
 import ProductionChart from "../components/productionChart";
 import LineChart from "../components/lineChart";
+import { useParams } from "react-router";
+import MultiLineChart from "../components/multilineChart";
 
 type Snapshot = {
+    greenhouse_name?: string;
     captured_at: string;
     temperature_air_c: number | string | null;
     humidity_pct: number | string | null;
@@ -32,6 +35,7 @@ type ApiResponse = {
     last: Snapshot | null;
     history: Snapshot[];
     monthly_production?: ProductionPoint[];
+    season_harvest_total?: number;
     message?: string;
 };
 
@@ -43,49 +47,74 @@ export default function Index() {
     const [historyData, setHistoryData] = useState<Snapshot[]>([]);
     const [showDetails, setShowDetails] = useState(false);
     const [showChartDetails, setShowChartDetails] = useState(false);
+    const { id } = useParams();
+    const [range, setRange] = useState("week");
+    const [compareMode, setCompareMode] = useState(false);
+    const [compareYear, setCompareYear] = useState("");
+    const [seasonHarvestTotal, setSeasonHarvestTotal] = useState(0);
+
 
     useEffect(() => {
         async function loadDashboard() {
-        try {
-            setLoading(true);
-            setError(null);
+            try {
+                setLoading(true);
+                setError(null);
+                const params = new URLSearchParams({
+                    greenhouse_id: String(id),
+                    range,
+                });
 
-            const response = await fetch("https://theocolpaert.be/projets/tfe_test5/backend/import.php?greenhouse_id=1&limit=100");
+                if (compareMode && compareYear) {
+                    params.set("compare_year", compareYear);
+                }
 
-            if (!response.ok) {
-            throw new Error(`Erreur HTTP ${response.status}`);
+                const response = await fetch(`https://theocolpaert.be/projets/tfe_test6/backend/import.php?greenhouse_id=${id}&range=${range}`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error ${response.status}`);
+                }
+
+                const json: ApiResponse = await response.json();
+
+                if (!json.success) {
+                    throw new Error(json.message || "API error");
+                }
+
+                setData(json.last);
+                setMonthlyProduction(json.monthly_production || []);
+                setHistoryData(json.history || []);
+                setSeasonHarvestTotal(json.season_harvest_total || 0);
+
+            } catch (err) {
+                console.error(err);
+                setError("Unable to load the dashboard data.");
+            } finally {
+                setLoading(false);
             }
-
-            const json: ApiResponse = await response.json();
-
-            if (!json.success) {
-            throw new Error(json.message || "Erreur API");
-            }
-
-            setData(json.last);
-            setMonthlyProduction(json.monthly_production || []);
-            setHistoryData(json.history || []);
-
-        } catch (err) {
-            console.error(err);
-            setError("Impossible de charger les données du dashboard.");
-        } finally {
-            setLoading(false);
-        }
         }
 
         loadDashboard();
-    }, []);
+
+    }, [id,range, compareMode, compareYear]);
 
     const temperature =
         data?.temperature_air_c != null
         ? `${Number(data.temperature_air_c).toFixed(1)}°C`
         : "--";
 
-    const sunlight =
-        data?.lux != null
-        ? `${Number(data.lux).toFixed(1)} Lx`
-        : "--";
+    const sunlight = (() => {
+
+        if (data?.lux == null) return "--";
+
+        const lux = Number(data.lux);
+
+        if (lux >= 1000) {
+            return `${(lux / 1000).toFixed(1).replace(".0", "")}k Lx`;
+        }
+
+        return `${lux.toFixed(0)} Lx`;
+
+    })();
 
     const humidity =
         data?.humidity_pct != null
@@ -104,27 +133,27 @@ export default function Index() {
                 ? "sun"
                 : "cloud";
 
-    const strawberriesReady =
-        data != null ? Number(data.fruits_red || 0) : 0;
-
+    const strawberriesReady = data != null ? Number(data.fruits_red || 0) : 0;
+    const greenhouseName = data?.greenhouse_name || `#${id}`;
+    
     function parseMysqlDate(dateStr: string): Date {
         return new Date(dateStr.replace(" ", "T"));
     }
 
     const tempAverage = (() => {
-    if (!data || !historyData.length) return null;
+        if (!data || !historyData.length) return null;
 
-    const lastDate = parseMysqlDate(data.captured_at);
-    const minTime = lastDate.getTime() - 24 * 60 * 60 * 1000;
+        const lastDate = parseMysqlDate(data.captured_at);
+        const minTime = lastDate.getTime() - 24 * 60 * 60 * 1000;
 
-    const values = historyData
-        .filter((row) => {
-        if (!row.captured_at || row.temperature_air_c == null) return false;
-        const rowDate = parseMysqlDate(row.captured_at);
-        return rowDate.getTime() >= minTime && rowDate.getTime() <= lastDate.getTime();
-        })
-        .map((row) => Number(row.temperature_air_c))
-        .filter((value) => !Number.isNaN(value));
+        const values = historyData
+            .filter((row) => {
+                if (!row.captured_at || row.temperature_air_c == null) return false;
+                const rowDate = parseMysqlDate(row.captured_at);
+                return rowDate.getTime() >= minTime && rowDate.getTime() <= lastDate.getTime();
+            })
+            .map((row) => Number(row.temperature_air_c))
+            .filter((value) => !Number.isNaN(value));
 
         if (!values.length) return null;
 
@@ -201,120 +230,158 @@ export default function Index() {
         return `${day}/${month}`;
     }
 
-    const monthTempData = buildDailyAverageData(historyData, "temperature_air_c");
-    const monthHumidityData = buildDailyAverageData(historyData, "humidity_pct");
-    const monthPresData = buildDailyAverageData(historyData, "pressure_hpa");
-    const monthSunlightData = buildDailyAverageData(historyData, "lux");
+    const monthTempData = buildAverageData(historyData, "temperature_air_c",range);
+    const monthHumidityData = buildAverageData(historyData, "humidity_pct",range);
+    const monthPresData = buildAverageData(historyData, "pressure_hpa",range);
+    const monthSunlightData = buildAverageData(historyData, "lux",range);
 
-    function buildDailyAverageData( rows: Snapshot[], field: "temperature_air_c" | "humidity_pct" | "pressure_hpa" | "lux") {
+    function buildAverageData(
+        rows: Snapshot[],
+        field: "temperature_air_c" | "humidity_pct" | "pressure_hpa" | "lux",
+        range: string
+    ) {
         const grouped = new Map<string, number[]>();
 
         for (const row of rows) {
-        if (!row.captured_at || row[field] == null) continue;
+            if (!row.captured_at || row[field] == null) continue;
 
-        const value = Number(row[field]);
-        if (Number.isNaN(value)) continue;
+            const value = Number(row[field]);
+            if (Number.isNaN(value)) continue;
 
-        const date = parseMysqlDate(row.captured_at);
-        const key = date.toISOString().slice(0, 10);
+            const date = parseMysqlDate(row.captured_at);
 
-        if (!grouped.has(key)) {
+            const key =
+            range === "day"
+                ? `${date.getHours().toString().padStart(2, "0")}:00`
+                : date.toISOString().slice(0, 10);
+
+            if (!grouped.has(key)) {
             grouped.set(key, []);
+            }
+
+            grouped.get(key)!.push(value);
         }
 
-        grouped.get(key)!.push(value);
-        }
-
-        return Array.from(grouped.entries())
-        .sort((a, b) => a[0].localeCompare(b[0]))
-        .map(([key, values]) => {
+        return Array.from(grouped.entries()).map(([key, values]) => {
             const avg = values.reduce((acc, v) => acc + v, 0) / values.length;
-            const date = new Date(`${key}T00:00:00`);
+
             return {
-            label: formatDayLabel(date),
-            value: Number(avg.toFixed(2)),
+                label:
+                    range === "day"
+                    ? key
+                    : formatDayLabel(new Date(`${key}T00:00:00`)),
+                value: Number(avg.toFixed(2)),
             };
         });
     }
 
+    const rangeLabel =
+    range === "day"
+        ? "last 24 hours"
+        : range === "week"
+        ? "this week"
+        : range === "month"
+        ? "this month"
+        : "this season";
+
+    function buildFruitStageData(rows: Snapshot[]) {
+        return rows.map((row) => {
+            const date = parseMysqlDate(row.captured_at);
+
+            return {
+            label:
+                range === "day"
+                ? `${date.getHours().toString().padStart(2, "0")}:${date
+                    .getMinutes()
+                    .toString()
+                    .padStart(2, "0")}`
+                : formatDayLabel(date),
+            flowers: Number(row.flowers_white || 0),
+            green: Number(row.fruits_green || 0),
+            yellow: Number(row.fruits_yellow || 0),
+            red: Number(row.fruits_red || 0),
+            };
+        });
+    }
+
+    const fruitStageData = buildFruitStageData(historyData);
     return (
         <>
             <div className="top--nav">
-                <div className="section--logo">
-                    <img className="img--logo" src={import.meta.env.BASE_URL + "logo.svg"} alt="Logo de l'entreprise BerryCam"/>
-                    <p className="p--logo">BerryCam</p>
-                </div>
-
-                <Link to={import.meta.env.BASE_URL} className="btn--back">
-                    Back
+                <Link to="/projets/tfe_appDemo" className="btn--back">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
+                    </svg>
                 </Link>
             </div>
 
-            <h1 className="section--title__big">Data from Greenhouse No. 1</h1>
+            <h1 className="section--title__big">Data from {greenhouseName}</h1>
 
             {loading && <p>Chargement des données...</p>}
             {error && <p>{error}</p>}
 
+            <div className="card--gap"></div>
+
             <div className="grid">
                 <div className="card--click" onClick={() => setShowDetails((prev) => !prev)}>
-                <Card>
-                    <p className="p--small">Temperature</p>
-                    <p className="p--big">{temperature}</p>
-                    <Gauge value={data?.temperature_air_c != null ? Number(data.temperature_air_c) : null} min={0} max={36}/>
+                    <Card>
+                        <p className="p--small">Temperature</p>
+                        <p className="p--big">{temperature}</p>
+                        <Gauge value={data?.temperature_air_c != null ? Number(data.temperature_air_c) : null} min={0} max={36}/>
 
-                    {showDetails && (
-                        <p className="p--small p--avg">
-                            Avg last 24h:{" "}
-                            {tempAverage != null ? `${tempAverage.toFixed(1)}°C` : "--"}
-                        </p>
-                    )}
-                </Card>
+                        {showDetails && (
+                            <p className="p--small p--avg">
+                                Avg last 24h:{" "}
+                                {tempAverage != null ? `${tempAverage.toFixed(1)}°C` : "--"}
+                            </p>
+                        )}
+                    </Card>
                 </div>
 
                 <div className="card--click" onClick={() => setShowDetails((prev) => !prev)}>
-                <Card>
-                    <p className="p--small">Sunlight rate</p>
-                    <p className="p--big">{sunlight}</p>
-                    {/* <Gauge /> */}
+                    <Card>
+                        <p className="p--small">Sunlight rate</p>
+                        <p className="p--big">{sunlight}</p>
+                        <Gauge value={data?.lux != null ? Number(data.lux) : null} min={0} max={40000}/>
 
-                    {showDetails && (
+                        {showDetails && (
                         <p className="p--small p--avg">
                             Avg last 24h:{" "}
-                            {sunRateAverage != null ? `${sunRateAverage.toFixed(1)}Lx` : "--"}
+                            {sunRateAverage != null ? `${sunRateAverage.toFixed(1)} Lx` : "--"}
                         </p>
-                    )}
-                </Card>
+                        )}
+                    </Card>
                 </div>
 
                 <div className="card--click" onClick={() => setShowDetails((prev) => !prev)}>
-                <Card>
-                    <p className="p--small">Humidity rate</p>
-                    <p className="p--big">{humidity}</p>
-                    <Gauge value={data?.humidity_pct != null ? Number(data.humidity_pct) : null} min={40} max={90}/>
+                    <Card>
+                        <p className="p--small">Humidity rate</p>
+                        <p className="p--big">{humidity}</p>
+                        <Gauge value={data?.humidity_pct != null ? Number(data.humidity_pct) : null} min={40} max={90}/>
 
-                    {showDetails && (
-                        <p className="p--small p--avg">
-                            Avg last 24h:{" "}
-                            {humidityAverage != null ? `${humidityAverage.toFixed(1)} %` : "--"}
-                        </p>
-                    )}
-                </Card>
+                        {showDetails && (
+                            <p className="p--small p--avg">
+                                Avg last 24h:{" "}
+                                {humidityAverage != null ? `${humidityAverage.toFixed(1)} %` : "--"}
+                            </p>
+                        )}
+                    </Card>
                 </div>
 
                 <div className="card--click" onClick={() => setShowDetails((prev) => !prev)}>
-                <Card>
-                    <p className="p--small">Weather</p>
-                    <div className="svg--weather" style={{ display: "flex", justifyContent: "center"}}>
-                    <WeatherIcon type={weatherType} size={60} />
-                    </div>
+                    <Card>
+                        <p className="p--small">Weather</p>
+                        <div className="div--weather">
+                            <WeatherIcon type={weatherType} size={60} />
+                        </div>
 
-                    {showDetails && (
-                        <p className="p--small p--avg">
-                            Avg last 24h:{" "}
-                            {pressureAverage != null ? `${pressureAverage.toFixed(1)} hPa` : "--"}
-                        </p>
-                    )}
-                </Card>
+                        {showDetails && (
+                            <p className="p--small p--avg">
+                                Avg last 24h:{" "}
+                                {pressureAverage != null ? `${pressureAverage.toFixed(1)} hPa` : "--"}
+                            </p>
+                        )}
+                    </Card>
                 </div>
             </div>
 
@@ -330,51 +397,68 @@ export default function Index() {
 
             <div className="card--gap">
                 <Card>
-                <h1>Your production per month</h1>
-                <ProductionChart data={monthlyProduction} />
+                    <h1>Your production per month</h1>
+                    <ProductionChart data={monthlyProduction} />
 
-                <button onClick={() => setShowChartDetails((prev) => !prev)}>
-                    {showChartDetails ? "Close details" : "See details"}
-                </button>
+                    <button onClick={() => setShowChartDetails((prev) => !prev)}>
+                        {showChartDetails ? "Close details" : "See details"}
+                    </button>
 
-                {showChartDetails && (
+                    {showChartDetails && (
+                        
                     <div style={{ marginTop: "8px" }}>
-                        <LineChart
-                            title="Temperature over last 5 days"
-                            unit="°C"
-                            data={monthTempData}
-                        />
+                <Card>
 
-                        <LineChart
-                            title="Humidity over last 5 days"
-                            unit="%"
-                            data={monthHumidityData}
-                        />
+                <label>
+                    Display period
 
-                        <LineChart
-                            title="Pressure over last 5 days"
-                            unit="hPa"
-                            data={monthPresData}
-                        />
+                    <select className="display--period" value={range} onChange={(e) => setRange(e.target.value)}>
+                        <option value="day">Day</option>
+                        <option value="week">Week</option>
+                        <option value="month">Month</option>
+                    </select>
+                </label>
 
-                        <LineChart
-                            title="Sunlight over last 5 days"
-                            unit="Lx"
-                            data={monthSunlightData}
-                        />
+                </Card>
+                    <LineChart
+                        title={`Temperature over ${rangeLabel}`}
+                        unit="°C"
+                        data={monthTempData}
+                    />
+
+                    <LineChart
+                        title={`Humidity over ${rangeLabel}`}
+                        unit="%"
+                        data={monthHumidityData}
+                    />
+
+                    <LineChart
+                         title={`Pressure over ${rangeLabel}`}
+                        unit="hPa"
+                        data={monthPresData}
+                    />
+
+                    <LineChart
+                         title={`Sunlight over ${rangeLabel}`}
+                        unit="Lx"
+                        data={monthSunlightData}
+                    />
+                    
+                    <MultiLineChart
+                        title={`Fruit development over ${rangeLabel}`}
+                        data={fruitStageData}
+                    />
                     </div>
-                )}
+                    
+                    )}
                 </Card>
 
                 <Card>
-                <h1>Greenhouse data</h1>
-                <div className="data--props">
-                    <p className="p--small__props">Length :</p>
-                    <p className="p--small__props">Width :</p>
-                    <p className="p--small__props">Height :</p>
-                    <p className="p--small__props">Orientation :</p>
-                </div>
-                <button>Change something ?</button>
+                    <div>
+                        <p className="p--small">Since season start</p>
+                        <p className="p--big">{seasonHarvestTotal} strawberries</p>
+                        <p className="p--small">have been harvested</p>
+                    </div>
                 </Card>
             </div>
         </>

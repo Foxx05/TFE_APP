@@ -1,0 +1,132 @@
+import { useEffect, useState } from "react";
+import { Link } from "react-router";
+
+type Greenhouse = {
+  greenhouse_id: number;
+  name: string;
+};
+
+export default function ManageGreenhouses() {
+  const [greenhouses, setGreenhouses] = useState<Greenhouse[]>([]);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+  async function loadGreenhouses() {
+    try {
+      const response = await fetch(
+        "https://theocolpaert.be/projets/tfe_appDemo/backend/get_greenhouse.php"
+      );
+
+      const result = await response.json();
+
+      if (result.success) {
+        setGreenhouses(result.greenhouses || []);
+      } else {
+        setError("Unable to load greenhouses");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Unable to load greenhouses");
+    }
+  }
+
+  loadGreenhouses();
+}, []);
+
+  const [message, setMessage] = useState("");
+
+  async function sendProductionCsv() {
+  setError("");
+  setMessage("");
+
+  const response = await fetch(
+    "https://theocolpaert.be/projets/tfe_app/backend/send_production_csv.php",
+    {
+      method: "POST",
+      credentials: "include",
+    }
+  );
+
+  const result = await response.json();
+
+  if (!result.success) {
+    setError(result.message || "Unable to send CSV");
+    return;
+  }
+
+  setMessage("CSV successfully sent by email");
+  }
+
+
+  async function deleteGreenhouse(id: number) {
+    const confirmDelete = confirm("Are you sure you want to delete this greenhouse?");
+    if (!confirmDelete) return;
+
+    const response = await fetch(
+      "https://theocolpaert.be/projets/tfe_test6/backend/delete_greenhouse.php",
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          greenhouse_id: id,
+        }),
+      }
+    );
+
+    const result = await response.json();
+
+    if (!result.success) {
+      setError(result.message || "Delete failed");
+      return;
+    }
+
+    setGreenhouses((prev) =>
+      prev.filter((greenhouse) => greenhouse.greenhouse_id !== id)
+    );
+  }
+
+  return (
+    <>
+      <div className="top--nav">
+        <Link to="/projets/tfe_appDemo" className="btn--back">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
+          </svg>
+        </Link>
+      </div>
+
+      <h1 className="section--title__big">Manage greenhouses</h1>
+
+      {error && <p className="auth--error">{error}</p>}
+
+      <button type="button">
+        Add greenhouse
+      </button>
+
+      <button type="button" className="btn--csv">
+        Send Production CSV by email
+      </button>
+
+      {message && <p className="auth--success">{message}</p>}
+
+      <div className="card--gap">
+        {greenhouses.map((greenhouse) => (
+          <div className="card" key={greenhouse.greenhouse_id}>
+            <p className="p--big">{greenhouse.name}</p>
+
+            <button type="button">
+              Edit
+            </button>
+
+            <button type="button">
+              Delete
+            </button>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}

@@ -54,7 +54,7 @@ useEffect(() => {
 
       <div className="grid">
         {greenhouses.map((greenhouse) => (
-          <Link to={`greenhouseData/${greenhouse.greenhouse_id}`} className="card--click card--home">
+          <Link key={greenhouse.greenhouse_id} to={`/projets/tfe_appDemo/greenhouseData/${greenhouse.greenhouse_id}`} className="card--click card--home">
             <Card>
               <p className="p--small">See datas for</p>
               <p className="p--big">{greenhouse.name}</p>

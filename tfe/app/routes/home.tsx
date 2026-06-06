@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router";
 import { Link } from "react-router";
 import { useEffect, useState } from "react";
-import Card from "../components/card";
-import CardManage from "../components/cardManage";
+import Card from "../components/Card";
+import CardManage from "../components/CardManage";
 
 export default function Home() {
 

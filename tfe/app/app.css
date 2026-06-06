@@ -290,6 +290,12 @@ button, .btn--back{
   margin-top: "12px";
 }
 
+.line--chart {
+  width: 100%;
+  height: 240px;
+  margin-top: 18px;
+}
+
 .line--chart__header{
   display: grid;
   grid-template-columns: 40px 1fr 40px;

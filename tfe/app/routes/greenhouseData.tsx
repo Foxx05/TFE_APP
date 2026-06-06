@@ -69,10 +69,7 @@ export default function Index() {
                     offset: String(offset),
                 });
 
-                const response = await fetch(
-                    `https://theocolpaert.be/projets/tfe_test6/backend/import.php?${params.toString()}`
-                );
-
+                const response = await fetch(`${import.meta.env.BASE_URL}backend/import.php?${params.toString()}`);
                 if (!response.ok) {
                     throw new Error(`HTTP error ${response.status}`);
                 }

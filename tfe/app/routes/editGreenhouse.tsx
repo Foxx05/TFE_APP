@@ -20,67 +20,33 @@ export default function EditGreenhouse() {
     async function loadGreenhouse() {
       setError("");
 
-      const response = await fetch(
-        `https://theocolpaert.be/projets/tfe_app/backend/get_greenhouse.php?greenhouse_id=${id}`,
-        {
-          credentials: "include",
-        }
-      );
+      const response = await fetch(`${import.meta.env.BASE_URL}backend/get_greenhouse.php?greenhouse_id=${id}`);
 
       const result = await response.json();
+
+      console.log(result);
 
       if (!result.success) {
         setError(result.message || "Unable to load greenhouse");
         return;
       }
 
-      setName(result.greenhouse.name || "");
-      setLengthM(result.greenhouse.length_m || "");
-      setWidthM(result.greenhouse.width_m || "");
-      setHeightM(result.greenhouse.height_m || "");
-      setOrientation(result.greenhouse.orientation || "");
+      const greenhouse = result.greenhouse || result.greenhouses?.[0];
+
+      if (!greenhouse) {
+        setError("Greenhouse not found");
+        return;
+      }
+
+      setName(greenhouse.name || "");
+      setLengthM(greenhouse.length_m || "");
+      setWidthM(greenhouse.width_m || "");
+      setHeightM(greenhouse.height_m || "");
+      setOrientation(greenhouse.orientation || "");
     }
 
     loadGreenhouse();
   }, [id]);
-
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-
-    const response = await fetch(
-      "https://theocolpaert.be/projets/tfe_app/backend/update_greenhouse.php",
-      {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          greenhouse_id: id,
-          name,
-          length_m: lengthM,
-          width_m: widthM,
-          height_m: heightM,
-          orientation,
-        }),
-      }
-    );
-
-    const result = await response.json();
-
-    if (!result.success) {
-      setError(result.message || "Update failed");
-      return;
-    }
-
-    setSuccess("Greenhouse successfully updated!");
-
-    setTimeout(() => {
-      navigate(`${import.meta.env.BASE_URL}manageGreenhouses`);
-    }, 800);
-  }
 
   return (
     <>
@@ -94,7 +60,7 @@ export default function EditGreenhouse() {
 
       <h1 className="section--title__big">Edit greenhouse</h1>
 
-      <form className="auth--form" onSubmit={handleSubmit}>
+      <form className="auth--form">
         <label>
           Name
           <input

@@ -115,7 +115,7 @@ export default function EditGreenhouse() {
           </select>
         </label>
 
-        <button type="button">Save changes</button>
+        <button type="button" className="disabled">Save changes</button>
       </form>
     </>
   );

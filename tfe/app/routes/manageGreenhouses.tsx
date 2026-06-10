@@ -102,11 +102,11 @@ export default function ManageGreenhouses() {
 
       {error && <p className="auth--error">{error}</p>}
 
-      <button type="button">
+      <button type="button" className="disabled">
         Add greenhouse
       </button>
 
-      <button type="button" className="btn--csv">
+      <button type="button" className="btn--csv disabled">
         Send Production CSV by email
       </button>
 
@@ -121,7 +121,7 @@ export default function ManageGreenhouses() {
               <button type="button">Edit</button>
             </Link>
 
-            <button type="button">
+            <button type="button" className="disabled">
               Delete
             </button>
           </div>
